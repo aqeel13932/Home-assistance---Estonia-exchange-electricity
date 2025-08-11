@@ -1,0 +1,26 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+rest:
+  - resource: https://dashboard.elering.ee/api/nps/price/EE/current
+    scan_interval: 300
+    timeout: 10
+    sensor:
+      - name: "Elering current price"
+        unique_id: elering_price_current_kwh
+        value_template: >
+          {% set eur_mwh = value_json.data[0].price | float(0) %}
+          {{ (eur_mwh / 1000) | round(5) }}
+        unit_of_measurement: "€/kWh"
+        state_class: measurement
+        json_attributes_path: "$.data[0]"
+        json_attributes:
+          - timestamp
+          - price
